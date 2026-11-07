@@ -20,12 +20,12 @@ export type SceneProps = {
 
 export function Experience() {
   const { scene, ready, stageRef, veilRef, nextScene, replay } = useSceneJourney();
-  const { soundEnabled, setSoundEnabled, playChime } = useSound();
+  const { soundEnabled, toggleSound, startExperienceMusic, playChime } = useSound(scene);
 
   const current = experience.scenes[scene];
 
   return (
-    <div className="experience">
+    <div className="experience" data-music-state={soundEnabled ? "playing" : "muted"}>
       <div className="experience__aurora" aria-hidden="true" />
       <SparkField />
       <header className="site-header">
@@ -37,10 +37,11 @@ export function Experience() {
           <span className="chapter-counter" aria-label={"Chapter " + (scene + 1) + " of 7"}>
             {String(scene + 1).padStart(2, "0")} <span>/ 07</span>
           </span>
+          <span className="site-music-label" title="Original soft-piano instrumental soundtrack">ORIGINAL PIANO {soundEnabled ? "ON" : "OFF"}</span>
           <button
             type="button"
             className="icon-button"
-            onClick={() => setSoundEnabled((enabled) => !enabled)}
+            onClick={toggleSound}
             aria-label={soundEnabled ? "Mute sounds" : "Enable sounds"}
             title={soundEnabled ? "Mute sounds" : "Enable sounds"}
           >
@@ -59,7 +60,7 @@ export function Experience() {
         {ready && (
           <div className="scene-transition__stage" ref={stageRef} tabIndex={-1} data-scene={current.id} aria-label={current.title}>
             <div key={scene} className="scene-enter">
-            {scene === 0 && <Invitation onNext={nextScene} playChime={playChime} />}
+            {scene === 0 && <Invitation onNext={() => { startExperienceMusic(); nextScene(); }} playChime={playChime} />}
             {scene === 1 && <LostDiyas onNext={nextScene} playChime={playChime} />}
             {scene === 2 && <Rangoli onNext={nextScene} playChime={playChime} />}
             {scene === 3 && <WishingStars onNext={nextScene} playChime={playChime} />}
