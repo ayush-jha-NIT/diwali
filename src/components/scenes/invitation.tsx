@@ -123,8 +123,8 @@ export function Invitation({ onNext, playChime }: SceneProps) {
           </div>
 
           <h1 className="invitation__title">
-            <span className="invitation__title-line">Someone left</span>
-            <span className="invitation__title-line">a <em>little magic</em></span>
+            <span className="invitation__title-line">Someone left</span>{" "}
+            <span className="invitation__title-line">a <em>little magic</em></span>{" "}
             <span className="invitation__title-line">for you tonight.</span>
           </h1>
 
