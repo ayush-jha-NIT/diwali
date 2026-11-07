@@ -104,3 +104,43 @@ test("music button remains reachable at 320, 390 and 1366 widths", async ({ page
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width + 1);
   }
 });
+
+
+test("first normal screen tap starts blocked audio without pressing sound icon", async ({ page }) => {
+  await mockSong(page);
+  await page.addInitScript(() => {
+    let unlocked = false;
+    document.addEventListener("pointerdown", () => { unlocked = true; }, true);
+    document.addEventListener("click", () => { unlocked = true; }, true);
+    const original = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function (...args) {
+      if (!unlocked) return Promise.reject(new DOMException("Autoplay blocked", "NotAllowedError"));
+      return original.apply(this, args);
+    };
+  });
+  await invitation(page);
+  await expect(page.locator(".experience")).toHaveAttribute("data-music-state", "tap", { timeout: 8000 });
+  await page.locator(".site-brand").click();
+  await expect(page.locator('[data-scene="invitation"]')).toBeVisible();
+  await expect(page.locator(".experience")).toHaveAttribute("data-music-state", "playing", { timeout: 8000 });
+  await expect(page.getByRole("button", { name: "Mute sounds" })).toBeVisible();
+});
+
+test("Discover Your Surprise automatically starts unmuted background soundtrack", async ({ page }) => {
+  await mockSong(page);
+  await page.addInitScript(() => {
+    let unlocked = false;
+    document.addEventListener("pointerdown", () => { unlocked = true; }, true);
+    document.addEventListener("click", () => { unlocked = true; }, true);
+    const original = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function (...args) {
+      if (!unlocked) return Promise.reject(new DOMException("Autoplay blocked", "NotAllowedError"));
+      return original.apply(this, args);
+    };
+  });
+  await invitation(page);
+  await expect(page.locator(".experience")).toHaveAttribute("data-music-state", "tap", { timeout: 8000 });
+  await page.getByRole("button", { name: "Discover your surprise" }).click();
+  await expect(page.locator('[data-scene="lost-diyas"]')).toBeVisible();
+  await expect(page.locator(".experience")).toHaveAttribute("data-music-state", "playing", { timeout: 8000 });
+});

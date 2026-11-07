@@ -37,10 +37,11 @@ export function Experience() {
           <span className="chapter-counter" aria-label={"Chapter " + (scene + 1) + " of 7"}>
             {String(scene + 1).padStart(2, "0")} <span>/ 07</span>
           </span>
-          <span className="site-music-label" title="Original soft-piano instrumental soundtrack">{source === "heeriye" ? "HEERIYE FLUTE" : "ORIGINAL PIANO"} {soundEnabled ? (playbackState === "tap" ? "· TAP TO PLAY" : "· ON") : "· OFF"}</span>
+          <span className="site-music-label" title="Heeriye flute background music">{source === "heeriye" ? "HEERIYE FLUTE" : "ORIGINAL PIANO"} {soundEnabled ? (playbackState === "tap" ? "· TAP TO PLAY" : "· ON") : "· OFF"}</span>
           <button
             type="button"
             className="icon-button"
+            data-sound-toggle="true"
             onClick={toggleSound}
             aria-label={!soundEnabled ? "Enable sounds" : playbackState === "tap" ? "Start background music" : "Mute sounds"}
             title={!soundEnabled ? "Enable sounds" : playbackState === "tap" ? "Tap to start music" : "Mute sounds"}

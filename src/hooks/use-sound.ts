@@ -132,7 +132,7 @@ export function useSound(scene: number) {
         void started.then(() => {
           if (enabledRef.current && sourceRef.current === "heeriye") setPlaybackState("playing");
         }).catch(() => {
-          if (enabledRef.current && sourceRef.current === "heeriye") setPlaybackState("tap");
+          if (enabledRef.current && sourceRef.current === "heeriye" && audio.paused) setPlaybackState("tap");
         });
       }
     } catch {
@@ -162,10 +162,10 @@ export function useSound(scene: number) {
       if (attempt) void attempt.then(() => {
         if (enabledRef.current && sourceRef.current === "heeriye") setPlaybackState("playing");
       }).catch(() => {
-        if (enabledRef.current && sourceRef.current === "heeriye") setPlaybackState("tap");
+        if (enabledRef.current && sourceRef.current === "heeriye" && audio.paused) setPlaybackState("tap");
       });
     } catch {
-      queueMicrotask(() => { if (enabledRef.current) setPlaybackState("tap"); });
+      queueMicrotask(() => { if (enabledRef.current && audio.paused) setPlaybackState("tap"); });
     }
 
     return () => {
@@ -182,6 +182,31 @@ export function useSound(scene: number) {
     if (sourceRef.current === "piano-fallback") startPianoFallback();
     else trySong(); // Called synchronously inside the first user click.
   }, [trySong, startPianoFallback]);
+
+  // Sound starts ON. If the browser rejects audible autoplay, unlock it
+  // automatically on the first normal click, tap or keyboard activation.
+  useEffect(() => {
+    const firstGesture = (event: Event) => {
+      if (!enabledRef.current || explicitMuteRef.current) return;
+      const target = event.target;
+      if (target instanceof Element && target.closest("[data-sound-toggle]")) return;
+      if (sourceRef.current === "heeriye" && audioRef.current && !audioRef.current.paused) return;
+      if (sourceRef.current === "piano-fallback" && pianoRef.current?.context.state === "running") return;
+      activate();
+    };
+    const firstKey = (event: KeyboardEvent) => {
+      if (event.repeat || (event.key !== "Enter" && event.key !== " ")) return;
+      firstGesture(event);
+    };
+    document.addEventListener("pointerdown", firstGesture, true);
+    document.addEventListener("click", firstGesture, true);
+    document.addEventListener("keydown", firstKey, true);
+    return () => {
+      document.removeEventListener("pointerdown", firstGesture, true);
+      document.removeEventListener("click", firstGesture, true);
+      document.removeEventListener("keydown", firstKey, true);
+    };
+  }, [activate]);
 
   const toggleSound = useCallback(() => {
     // If autoplay was blocked, the first sound-button tap starts playback.
