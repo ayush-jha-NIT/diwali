@@ -21,6 +21,22 @@ jobs:
           NEXT_TELEMETRY_DISABLED: '1'
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - name: Verify public production URL
+        if: github.ref == 'refs/heads/main'
+        run: |
+          for attempt in $(seq 1 24); do
+            if curl --fail --location --silent --show-error --max-time 15 \
+              https://diwali-kuhu.vercel.app/ -o /tmp/diwali-home.html; then
+              if grep -q "The Last Spark" /tmp/diwali-home.html; then
+                echo "Public production URL reachable with expected page title."
+                exit 0
+              fi
+            fi
+            echo "Deployment not yet serving the page; attempt $attempt/24"
+            sleep 5
+          done
+          echo "Public URL verification failed."
+          exit 1
       - name: Upload browser QA screenshots and trace
         if: always()
         uses: actions/upload-artifact@v4
