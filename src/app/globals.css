@@ -111,3 +111,41 @@ h1,h2,p{margin-top:0}h1,h2{font-family:var(--font-display),Georgia,serif;font-we
 }
 @media(max-height:700px){.invitation__light{transform:scale(.76);margin:-45px auto -36px}.invitation__title{font-size:clamp(44px,6vw,74px)}.invitation__copy{margin:12px 0 18px}.invitation__aside{margin-top:18px}.puzzle-world{max-height:310px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+
+/* Reusable cinematic chapter wipe: one persistent GSAP-controlled stage. */
+.scene-transition__stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  outline: none;
+  will-change: transform, opacity, filter;
+}
+.scene-transition__stage:focus { outline: none; }
+.scene-transition__veil {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 46%, rgba(248, 201, 126, .40) 0, rgba(130, 63, 111, .36) 18%, rgba(37, 22, 68, .95) 57%, #090b20 100%),
+    linear-gradient(145deg, #130e33, #28153d 52%, #080a1c);
+}
+.scene-transition__veil::before {
+  content: "✦";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ffe3a2;
+  font-size: clamp(50px, 10vw, 105px);
+  text-shadow: 0 0 30px #ffcb7c, 0 0 95px #f2b367;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-transition__stage { will-change: auto; }
+}

@@ -1,11 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { experience } from "@/config/experience";
-import { readProgress, resetProgress, saveProgress } from "@/lib/scene-storage";
 import { useSound } from "@/hooks/use-sound";
 import { SparkField } from "@/components/effects/spark-field";
+import { useSceneJourney } from "@/hooks/use-scene-journey";
 import { Invitation } from "@/components/scenes/invitation";
 import { LostDiyas } from "@/components/scenes/lost-diyas";
 import { Rangoli } from "@/components/scenes/rangoli";
@@ -20,32 +19,8 @@ export type SceneProps = {
 };
 
 export function Experience() {
-  const [scene, setScene] = useState(0);
-  const [mounted, setMounted] = useState(false);
+  const { scene, ready, stageRef, veilRef, nextScene, replay } = useSceneJourney();
   const { soundEnabled, setSoundEnabled, playChime } = useSound();
-
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      setScene(readProgress());
-      setMounted(true);
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, []);
-
-  const nextScene = useCallback(() => {
-    setScene((current) => {
-      const next = Math.min(current + 1, experience.scenes.length - 1);
-      saveProgress(next);
-      return next;
-    });
-    window.scrollTo({ top: 0, behavior: "auto" });
-  }, []);
-
-  const replay = useCallback(() => {
-    resetProgress();
-    setScene(0);
-    window.scrollTo({ top: 0, behavior: "auto" });
-  }, []);
 
   const current = experience.scenes[scene];
 
@@ -80,8 +55,10 @@ export function Experience() {
       </header>
 
       <main className="scene-shell" aria-live="polite">
-        {mounted && (
-          <div key={scene} className="scene-enter">
+        <div className="scene-transition__veil" aria-hidden="true" ref={veilRef} />
+        {ready && (
+          <div className="scene-transition__stage" ref={stageRef} tabIndex={-1} data-scene={current.id} aria-label={current.title}>
+            <div key={scene} className="scene-enter">
             {scene === 0 && <Invitation onNext={nextScene} playChime={playChime} />}
             {scene === 1 && <LostDiyas onNext={nextScene} playChime={playChime} />}
             {scene === 2 && <Rangoli onNext={nextScene} playChime={playChime} />}
@@ -89,6 +66,7 @@ export function Experience() {
             {scene === 4 && <HiddenLetter onNext={nextScene} playChime={playChime} />}
             {scene === 5 && <SkyshotLaunch onNext={nextScene} playChime={playChime} />}
             {scene === 6 && <GrandFinale replay={replay} />}
+            </div>
           </div>
         )}
       </main>
