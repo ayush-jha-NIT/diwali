@@ -2003,3 +2003,44 @@ h1,h2,p{margin-top:0}h1,h2{font-family:var(--font-display),Georgia,serif;font-we
   .rangoli-v2__lotus-aura {animation:none!important;}
   .rangoli-v2__lotus {transform:translate(-50%,-50%);}
 }
+
+
+/* Final desktop-height composition polish for Phases 3 and 4.
+   Keep the full floral shapes inside the stage at 1366x768 and 1024x768,
+   while making both chapter CTAs reachable without an initial scroll. */
+@media (min-width: 701px) and (max-height: 850px) {
+  .rangoli-v2, .wishing-v2 {
+    padding-top: 7px;
+    padding-bottom: 10px;
+  }
+  .rangoli-v2__header, .wishing-v2__header {
+    margin-bottom: 9px;
+  }
+  .rangoli-v2 .rangoli-v2__title,
+  .wishing-v2 .wishing-v2__title {
+    font-size: clamp(43px, 4.7vw, 64px);
+    margin: 7px 0 8px;
+  }
+  .rangoli-v2 .rangoli-v2__world {
+    height: clamp(290px, 42svh, 355px);
+  }
+  .rangoli-v2__board {
+    width: min(72%, 370px, 40svh);
+  }
+  .rangoli-v2__tray {
+    min-height: 52px;
+    margin-top: 4px;
+    margin-bottom: 0;
+  }
+  .rangoli-v2__controls {
+    gap: 5px;
+    margin-top: 2px;
+  }
+  .wishing-v2 .wishing-v2__world {
+    height: clamp(300px, 43svh, 365px);
+  }
+  .wishing-v2__controls {
+    gap: 5px;
+    margin-top: 9px;
+  }
+}
