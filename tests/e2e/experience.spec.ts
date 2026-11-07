@@ -25,6 +25,7 @@ test("all seven scenes work and KUHU appears in the finale", async ({ page }, te
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
 
+  await expect(page.locator(".invitation__title")).toBeVisible();
   await page.screenshot({ path: "test-results/" + testInfo.project.name + "-invitation.png" });
   await begin(page);
   await assertNoHorizontalOverflow(page);

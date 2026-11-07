@@ -13,7 +13,8 @@ export function Invitation({ onNext, playChime }: SceneProps) {
   const reducedMotion = useReducedMotion();
 
   useGSAP(() => {
-    if (reducedMotion) return;
+    // Avoid a flash of hidden content before React resolves motion preferences.
+    if (reducedMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     gsap.timeline({ defaults: { ease: "power3.out" } })
       .from(".invitation__overline", { opacity: 0, y: 22, duration: 0.8, delay: 0.25 })
       .from(".invitation__title", { opacity: 0, y: 48, filter: "blur(12px)", duration: 1.3 }, "-=0.34")
