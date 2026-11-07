@@ -1164,3 +1164,26 @@ h1,h2,p{margin-top:0}h1,h2{font-family:var(--font-display),Georgia,serif;font-we
   .diya-garden__lamp { transform: translate(-50%, -50%); }
   .diya-garden__completion { transform: translate(-50%, -50%); }
 }
+
+
+/* Phase 2 interaction fix: floating visuals must never move the clickable
+   hit target. Keeping the button rect stationary preserves reliable pointer
+   and touch interactions while the diya inside it still gently floats. */
+.diya-garden__lamp {
+  animation: none;
+  transform: translate(-50%, -50%);
+}
+.diya-garden__lamp-figure {
+  animation: gardenFigureFloat 5s ease-in-out infinite alternate;
+  animation-delay: var(--float-delay);
+}
+@keyframes gardenFigureFloat {
+  from { transform: translate3d(0, 2px, 0); }
+  to { transform: translate3d(0, -7px, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .diya-garden__lamp-figure {
+    animation: none !important;
+    transform: none;
+  }
+}
