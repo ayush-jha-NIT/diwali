@@ -25,8 +25,10 @@ test("all seven scenes work and KUHU appears in the finale", async ({ page }, te
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
 
+  await page.screenshot({ path: "test-results/" + testInfo.project.name + "-invitation.png" });
   await begin(page);
   await assertNoHorizontalOverflow(page);
+  await page.screenshot({ path: "test-results/" + testInfo.project.name + "-lost-diyas.png" });
 
   for (const id of [1, 2, 3]) {
     await page.getByRole("button", { name: "Diya " + id + " unlit" }).click();
