@@ -155,7 +155,18 @@ export function useSound(scene: number) {
       if (enabledRef.current) startPianoFallback();
     };
     audio.addEventListener("error", error);
-    trySong(); // Best-effort audible autoplay on landing.
+    // Attempt audible autoplay on landing, observing the Promise asynchronously.
+    // This also avoids synchronous React state changes during effect setup.
+    try {
+      const attempt = audio.play();
+      if (attempt) void attempt.then(() => {
+        if (enabledRef.current && sourceRef.current === "heeriye") setPlaybackState("playing");
+      }).catch(() => {
+        if (enabledRef.current && sourceRef.current === "heeriye") setPlaybackState("tap");
+      });
+    } catch {
+      queueMicrotask(() => { if (enabledRef.current) setPlaybackState("tap"); });
+    }
 
     return () => {
       audio.removeEventListener("error", error);
