@@ -16,7 +16,7 @@ function wavFixture() {
 
 async function mockSong(page: Page) {
   const fixture = wavFixture();
-  await page.route("**/audio/heeriye-flute-cover.mp3", async route =>
+  await page.route("**/audio/freecompress-Heeriye_Flute_Cover_Flute_Siva_Jasleen_Royal_Arijit_Singh_Dulquer.mp3", async route =>
     route.fulfill({ status: 200, contentType: "audio/wav", body: fixture, headers: { "cache-control": "no-store" } }),
   );
 }
@@ -87,6 +87,7 @@ test("resumed chapters still begin with sound enabled", async ({ page }) => {
 });
 
 test("missing asset preserves original piano on user gesture", async ({ page }) => {
+  await page.route("**/audio/freecompress-Heeriye_Flute_Cover_Flute_Siva_Jasleen_Royal_Arijit_Singh_Dulquer.mp3", route => route.fulfill({ status: 404, body: "Not Found" }));
   await invitation(page);
   await expect(page.locator(".experience")).toHaveAttribute("data-music-source", "piano-fallback", { timeout: 10000 });
   await page.getByRole("button", { name: "Discover your surprise" }).click();

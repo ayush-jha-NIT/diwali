@@ -5,7 +5,7 @@ import { LOOP_SECONDS, PIANO_SCORE, type PianoNote } from "@/lib/original-piano-
 
 // When this user-provided recording is installed under public/audio,
 // it replaces the original piano everywhere on the website.
-export const HEERIYE_TRACK = "/audio/heeriye-flute-cover.mp3";
+export const HEERIYE_TRACK = "/audio/freecompress-Heeriye_Flute_Cover_Flute_Siva_Jasleen_Royal_Arijit_Singh_Dulquer.mp3";
 type PlaybackState = "checking" | "playing" | "tap" | "muted";
 type Source = "heeriye" | "piano-fallback";
 type PianoEngine = { context: AudioContext; gain: GainNode; interval: number };
