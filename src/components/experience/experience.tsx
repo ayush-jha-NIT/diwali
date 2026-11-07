@@ -20,12 +20,12 @@ export type SceneProps = {
 
 export function Experience() {
   const { scene, ready, stageRef, veilRef, nextScene, replay } = useSceneJourney();
-  const { soundEnabled, toggleSound, startExperienceMusic, playChime } = useSound(scene);
+  const { soundEnabled, playbackState, source, toggleSound, startExperienceMusic, playChime } = useSound(scene);
 
   const current = experience.scenes[scene];
 
   return (
-    <div className="experience" data-music-state={soundEnabled ? "playing" : "muted"}>
+    <div className="experience" data-music-state={playbackState} data-music-source={source}>
       <div className="experience__aurora" aria-hidden="true" />
       <SparkField />
       <header className="site-header">
@@ -37,13 +37,13 @@ export function Experience() {
           <span className="chapter-counter" aria-label={"Chapter " + (scene + 1) + " of 7"}>
             {String(scene + 1).padStart(2, "0")} <span>/ 07</span>
           </span>
-          <span className="site-music-label" title="Original soft-piano instrumental soundtrack">ORIGINAL PIANO {soundEnabled ? "ON" : "OFF"}</span>
+          <span className="site-music-label" title="Original soft-piano instrumental soundtrack">{source === "heeriye" ? "HEERIYE FLUTE" : "ORIGINAL PIANO"} {soundEnabled ? (playbackState === "tap" ? "· TAP TO PLAY" : "· ON") : "· OFF"}</span>
           <button
             type="button"
             className="icon-button"
             onClick={toggleSound}
-            aria-label={soundEnabled ? "Mute sounds" : "Enable sounds"}
-            title={soundEnabled ? "Mute sounds" : "Enable sounds"}
+            aria-label={!soundEnabled ? "Enable sounds" : playbackState === "tap" ? "Start background music" : "Mute sounds"}
+            title={!soundEnabled ? "Enable sounds" : playbackState === "tap" ? "Tap to start music" : "Mute sounds"}
           >
             {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
           </button>

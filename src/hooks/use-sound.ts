@@ -3,174 +3,258 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LOOP_SECONDS, PIANO_SCORE, type PianoNote } from "@/lib/original-piano-score";
 
-type MusicEngine = {
-  context: AudioContext;
-  gain: GainNode;
-  interval: number;
-};
+// When this user-provided recording is installed under public/audio,
+// it replaces the original piano everywhere on the website.
+export const HEERIYE_TRACK = "/audio/heeriye-flute-cover.mp3";
+type PlaybackState = "checking" | "playing" | "tap" | "muted";
+type Source = "heeriye" | "piano-fallback";
+type PianoEngine = { context: AudioContext; gain: GainNode; interval: number };
 
-/** Master values are deliberately restrained so the note stays readable. */
-function sceneMusicVolume(scene: number) {
-  if (scene === 4) return .075; // The Hidden Letter: nearly whispered
-  if (scene === 5) return .11;  // Rocket: a little more spacious
-  if (scene === 6) return .15;  // Fireworks: gentle emotional lift
-  return .135;
+function sceneVolume(scene: number) {
+  if (scene === 4) return .105; // The personal letter
+  if (scene === 5) return .16;  // Rocket launch
+  if (scene === 6) return .19;  // Fireworks
+  return .16;
 }
 
-function scheduleNote(
-  context: AudioContext, output: GainNode, note: PianoNote, at: number,
-) {
-  const start = at + note.at;
+function schedulePianoNote(context: AudioContext, output: GainNode, note: PianoNote, at: number) {
+  const begin = at + note.at;
+  const pad = note.role === "pad";
+  const lead = note.role === "melody";
   const duration = note.duration;
-  const isPad = note.role === "pad";
-  const isLead = note.role === "melody";
-  const gain = context.createGain();
-  const loudness = isPad ? .018 : isLead ? .19 : note.role === "bass" ? .075 : .072;
-  const attack = isPad ? .17 : .012;
-  gain.gain.setValueAtTime(.00001, start);
-  gain.gain.exponentialRampToValueAtTime(loudness, start + attack);
-  gain.gain.exponentialRampToValueAtTime(
-    Math.max(.00002, loudness * (isPad ? .58 : .28)), start + Math.max(attack + .06, duration * .45),
+  const volume = pad ? .018 : lead ? .19 : note.role === "bass" ? .075 : .072;
+  const attack = pad ? .17 : .012;
+  const envelope = context.createGain();
+  envelope.gain.setValueAtTime(.00001, begin);
+  envelope.gain.exponentialRampToValueAtTime(volume, begin + attack);
+  envelope.gain.exponentialRampToValueAtTime(
+    Math.max(.00002, volume * (pad ? .58 : .28)), begin + Math.max(attack + .06, duration * .45),
   );
-  gain.gain.exponentialRampToValueAtTime(.00001, start + duration);
-  gain.connect(output);
+  envelope.gain.exponentialRampToValueAtTime(.00001, begin + duration);
+  envelope.connect(output);
 
-  const fundamentals = context.createOscillator();
-  fundamentals.type = "sine";
-  fundamentals.frequency.value = note.frequency;
-  fundamentals.connect(gain);
-  fundamentals.start(start);
-  fundamentals.stop(start + duration + .02);
+  const main = context.createOscillator();
+  main.type = "sine";
+  main.frequency.value = note.frequency;
+  main.connect(envelope);
+  main.start(begin);
+  main.stop(begin + duration + .02);
 
-  if (!isPad) {
-    const harmonic = context.createOscillator();
-    const harmonicGain = context.createGain();
-    harmonic.type = "sine";
-    harmonic.frequency.value = note.frequency * (isLead ? 2.005 : 2);
-    harmonicGain.gain.value = isLead ? .21 : .13;
-    harmonic.connect(harmonicGain);
-    harmonicGain.connect(gain);
-    harmonic.start(start);
-    harmonic.stop(start + duration + .02);
+  if (!pad) {
+    const overtone = context.createOscillator();
+    const overtoneGain = context.createGain();
+    overtone.type = "sine";
+    overtone.frequency.value = note.frequency * (lead ? 2.005 : 2);
+    overtoneGain.gain.value = lead ? .21 : .13;
+    overtone.connect(overtoneGain);
+    overtoneGain.connect(envelope);
+    overtone.start(begin);
+    overtone.stop(begin + duration + .02);
+    overtone.onended = () => { overtone.disconnect(); overtoneGain.disconnect(); };
   }
-
-  fundamentals.onended = () => {
-    fundamentals.disconnect();
-    gain.disconnect();
-  };
+  main.onended = () => { main.disconnect(); envelope.disconnect(); };
 }
 
-/**
- * Original generative piano soundtrack (not a recording of "Heeriye").
- * Starts synchronously from user interaction because mobile autoplay is blocked.
- */
 export function useSound(scene: number) {
-  const [soundEnabled, setSoundEnabled] = useState(false);
-  const enabledRef = useRef(false);
-  const userMutedRef = useRef(false);
-  const engineRef = useRef<MusicEngine | null>(null);
+  // Sound is ON by default, as requested. Actual audible autoplay may be
+  // blocked by the visitor's browser until a direct user gesture.
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [playbackState, setPlaybackState] = useState<PlaybackState>("checking");
+  const [source, setSource] = useState<Source>("heeriye");
+  const enabledRef = useRef(true);
+  const explicitMuteRef = useRef(false);
+  const gestureRef = useRef(false);
   const sceneRef = useRef(scene);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const sourceRef = useRef<Source>("heeriye");
+  const pianoRef = useRef<PianoEngine | null>(null);
+  const chimeRef = useRef<AudioContext | null>(null);
 
-  const stop = useCallback(() => {
-    const engine = engineRef.current;
-    engineRef.current = null;
+  const stopPiano = useCallback(() => {
+    const engine = pianoRef.current;
+    pianoRef.current = null;
     if (!engine) return;
     window.clearInterval(engine.interval);
     try {
-      engine.gain.gain.setTargetAtTime(.00001, engine.context.currentTime, .025);
+      engine.gain.gain.setTargetAtTime(.00001, engine.context.currentTime, .02);
       void engine.context.close().catch(() => undefined);
-    } catch {
-      // The page must remain navigable if browser audio is unavailable.
-    }
+    } catch { /* Audio must never block the story. */ }
   }, []);
 
-  const start = useCallback(() => {
-    if (engineRef.current || typeof window === "undefined" || !window.AudioContext) return;
+  const startPianoFallback = useCallback(() => {
+    if (typeof window === "undefined" || !window.AudioContext || !enabledRef.current) return;
+    const existing = pianoRef.current;
+    if (existing) {
+      void existing.context.resume().then(() => {
+        if (enabledRef.current) setPlaybackState("playing");
+      }).catch(() => setPlaybackState("tap"));
+      return;
+    }
     try {
       const context = new window.AudioContext();
       const gain = context.createGain();
-      gain.gain.value = sceneMusicVolume(sceneRef.current);
+      gain.gain.value = sceneVolume(sceneRef.current);
       gain.connect(context.destination);
-      let nextLoop = context.currentTime + .08;
-
-      const scheduleAhead = () => {
+      let nextLoop = context.currentTime + .06;
+      const schedule = () => {
         if (context.state === "closed") return;
         while (nextLoop < context.currentTime + 2.5) {
-          for (const note of PIANO_SCORE) scheduleNote(context, gain, note, nextLoop);
+          for (const note of PIANO_SCORE) schedulePianoNote(context, gain, note, nextLoop);
           nextLoop += LOOP_SECONDS;
         }
       };
-      scheduleAhead();
-      const interval = window.setInterval(scheduleAhead, 700);
-      engineRef.current = { context, gain, interval };
-      if (context.state === "suspended") void context.resume().catch(() => undefined);
+      schedule();
+      pianoRef.current = { context, gain, interval: window.setInterval(schedule, 800) };
+      if (gestureRef.current) {
+        void context.resume().then(() => {
+          if (enabledRef.current) setPlaybackState("playing");
+        }).catch(() => setPlaybackState("tap"));
+      } else {
+        // A browser may refuse auto-created Web Audio contexts as well.
+        setPlaybackState("tap");
+      }
     } catch {
-      stop();
+      setPlaybackState("tap");
     }
-  }, [stop]);
+  }, []);
+
+  const trySong = useCallback(() => {
+    const audio = audioRef.current;
+    if (!enabledRef.current) return;
+    if (sourceRef.current === "piano-fallback") {
+      startPianoFallback();
+      return;
+    }
+    if (!audio) return;
+    try {
+      const started = audio.play();
+      if (started) {
+        void started.then(() => {
+          if (enabledRef.current && sourceRef.current === "heeriye") setPlaybackState("playing");
+        }).catch(() => {
+          if (enabledRef.current && sourceRef.current === "heeriye") setPlaybackState("tap");
+        });
+      }
+    } catch {
+      setPlaybackState("tap");
+    }
+  }, [startPianoFallback]);
+
+  useEffect(() => {
+    const audio = new Audio(HEERIYE_TRACK);
+    audio.loop = true;
+    audio.preload = "auto";
+    audio.volume = sceneVolume(sceneRef.current);
+    audioRef.current = audio;
+
+    const error = () => {
+      if (sourceRef.current !== "heeriye") return;
+      // A missing repository media asset should never break the surprise.
+      sourceRef.current = "piano-fallback";
+      setSource("piano-fallback");
+      if (enabledRef.current) startPianoFallback();
+    };
+    audio.addEventListener("error", error);
+    trySong(); // Best-effort audible autoplay on landing.
+
+    return () => {
+      audio.removeEventListener("error", error);
+      audio.pause();
+      audio.src = "";
+      audioRef.current = null;
+    };
+  }, [startPianoFallback, trySong]);
+
+  const activate = useCallback(() => {
+    gestureRef.current = true;
+    if (explicitMuteRef.current || !enabledRef.current) return;
+    if (sourceRef.current === "piano-fallback") startPianoFallback();
+    else trySong(); // Called synchronously inside the first user click.
+  }, [trySong, startPianoFallback]);
 
   const toggleSound = useCallback(() => {
-    const next = !enabledRef.current;
-    enabledRef.current = next;
-    userMutedRef.current = !next;
-    if (next) start();
-    else stop();
-    setSoundEnabled(next);
-  }, [start, stop]);
-
-  const startExperienceMusic = useCallback(() => {
-    // Respect the recipient's explicit decision to mute before continuing.
-    if (userMutedRef.current) return;
-    enabledRef.current = true;
-    start(); // Called directly by the invitation button's user gesture.
-    setSoundEnabled(true);
-  }, [start]);
+    // If autoplay was blocked, the first sound-button tap starts playback.
+    if (enabledRef.current && playbackState === "tap") {
+      activate();
+      return;
+    }
+    if (enabledRef.current) {
+      enabledRef.current = false;
+      explicitMuteRef.current = true;
+      audioRef.current?.pause();
+      stopPiano();
+      const chime = chimeRef.current;
+      if (chime && chime.state === "running") void chime.suspend().catch(() => undefined);
+      setSoundEnabled(false);
+      setPlaybackState("muted");
+    } else {
+      enabledRef.current = true;
+      explicitMuteRef.current = false;
+      setSoundEnabled(true);
+      activate();
+    }
+  }, [activate, playbackState, stopPiano]);
 
   const playChime = useCallback((pitch = 660) => {
-    if (!enabledRef.current) return;
+    if (!enabledRef.current || typeof window === "undefined" || !window.AudioContext) return;
     try {
-      const context = engineRef.current?.context;
-      if (!context || context.state === "closed") return;
+      const context = chimeRef.current ?? new AudioContext();
+      chimeRef.current = context;
+      if (context.state === "suspended") void context.resume().catch(() => undefined);
       const now = context.currentTime;
-      const oscillator = context.createOscillator();
+      const osc = context.createOscillator();
       const gain = context.createGain();
-      oscillator.type = "sine";
-      oscillator.frequency.setValueAtTime(pitch, now);
-      oscillator.frequency.exponentialRampToValueAtTime(pitch * 1.28, now + .17);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(pitch, now);
+      osc.frequency.exponentialRampToValueAtTime(pitch * 1.25, now + .15);
       gain.gain.setValueAtTime(.00001, now);
-      gain.gain.exponentialRampToValueAtTime(.054, now + .014);
-      gain.gain.exponentialRampToValueAtTime(.00001, now + .39);
-      oscillator.connect(gain);
+      gain.gain.exponentialRampToValueAtTime(.032, now + .014);
+      gain.gain.exponentialRampToValueAtTime(.00001, now + .35);
+      osc.connect(gain);
       gain.connect(context.destination);
-      oscillator.start(now);
-      oscillator.stop(now + .41);
-      oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
-    } catch {
-      // No audio failures should interrupt the interactions.
-    }
+      osc.start(now);
+      osc.stop(now + .38);
+      osc.onended = () => { osc.disconnect(); gain.disconnect(); };
+    } catch { /* Sound is never required to complete a puzzle. */ }
   }, []);
 
   useEffect(() => {
     sceneRef.current = scene;
-    const engine = engineRef.current;
-    if (!engine) return;
-    const time = engine.context.currentTime;
-    engine.gain.gain.setTargetAtTime(sceneMusicVolume(scene), time, .85);
+    const audio = audioRef.current;
+    if (audio) audio.volume = sceneVolume(scene);
+    const piano = pianoRef.current;
+    if (piano && piano.context.state !== "closed") {
+      piano.gain.gain.setTargetAtTime(sceneVolume(scene), piano.context.currentTime, .85);
+    }
   }, [scene]);
 
   useEffect(() => {
-    const onVisibility = () => {
-      const engine = engineRef.current;
-      if (!engine) return;
-      if (document.hidden) void engine.context.suspend().catch(() => undefined);
-      else if (enabledRef.current) void engine.context.resume().catch(() => undefined);
+    const change = () => {
+      if (document.hidden) {
+        audioRef.current?.pause();
+        const engine = pianoRef.current;
+        if (engine) void engine.context.suspend().catch(() => undefined);
+      } else if (enabledRef.current) {
+        trySong();
+      }
     };
-    document.addEventListener("visibilitychange", onVisibility);
+    document.addEventListener("visibilitychange", change);
     return () => {
-      document.removeEventListener("visibilitychange", onVisibility);
-      stop();
+      document.removeEventListener("visibilitychange", change);
+      audioRef.current?.pause();
+      stopPiano();
+      const chime = chimeRef.current;
+      chimeRef.current = null;
+      if (chime) void chime.close().catch(() => undefined);
     };
-  }, [stop]);
+  }, [trySong, stopPiano]);
 
-  return { soundEnabled, toggleSound, startExperienceMusic, playChime };
+  return {
+    soundEnabled,
+    playbackState,
+    source,
+    toggleSound,
+    startExperienceMusic: activate,
+    playChime,
+  };
 }

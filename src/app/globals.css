@@ -2865,3 +2865,17 @@ h1,h2,p{margin-top:0}h1,h2{font-family:var(--font-display),Georgia,serif;font-we
 }
 .experience[data-music-state="playing"] .site-music-label { color: #ffe0a1; opacity: 1; }
 @media (max-width: 520px) { .site-music-label { display: none; } }
+
+/* When browser autoplay is blocked, make the required music gesture obvious. */
+.experience[data-music-state="tap"] .site-music-label {
+  color: #ffe1a3; opacity: 1;
+  animation: musicPromptPulse 2.6s ease-in-out infinite alternate;
+}
+.experience[data-music-state="tap"] .site-actions .icon-button {
+  border-color: #f4c46e;
+  box-shadow: 0 0 16px #f4c46e50;
+}
+@keyframes musicPromptPulse { to { opacity: .62; } }
+@media (prefers-reduced-motion: reduce) {
+  .experience[data-music-state="tap"] .site-music-label { animation: none; }
+}

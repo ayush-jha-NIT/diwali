@@ -76,11 +76,12 @@ test("chapter progress survives reload and replay resets the story", async ({ pa
   await expect(page.getByRole("button", { name: /Discover your surprise/i })).toBeEnabled();
 });
 
-test("sound is opt-in and controls have accessible labels", async ({ page }) => {
-  const enable = page.getByRole("button", { name: "Enable sounds" });
-  await expect(enable).toBeVisible();
-  await enable.click();
-  await expect(page.getByRole("button", { name: "Mute sounds" })).toBeVisible();
+test("sound starts enabled but can be muted", async ({ page }) => {
+  const blocked = page.getByRole("button", { name: "Start background music" });
+  if (await blocked.isVisible()) await blocked.click();
+  await expect(page.getByRole("button", { name: "Mute sounds" })).toBeVisible({ timeout: 10000 });
+  await page.getByRole("button", { name: "Mute sounds" }).click();
+  await expect(page.getByRole("button", { name: "Enable sounds" })).toBeVisible();
   await assertNoHorizontalOverflow(page);
 });
 
