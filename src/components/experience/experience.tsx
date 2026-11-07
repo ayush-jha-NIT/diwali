@@ -25,8 +25,11 @@ export function Experience() {
   const { soundEnabled, setSoundEnabled, playChime } = useSound();
 
   useEffect(() => {
-    setScene(readProgress());
-    setMounted(true);
+    const frame = window.requestAnimationFrame(() => {
+      setScene(readProgress());
+      setMounted(true);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const nextScene = useCallback(() => {
@@ -35,13 +38,13 @@ export function Experience() {
       saveProgress(next);
       return next;
     });
-    window.scrollTo({ top: 0, behavior: "instant" });
+    window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
 
   const replay = useCallback(() => {
     resetProgress();
     setScene(0);
-    window.scrollTo({ top: 0, behavior: "instant" });
+    window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
 
   const current = experience.scenes[scene];
