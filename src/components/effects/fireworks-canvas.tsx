@@ -110,15 +110,13 @@ function createNameParticles(
 
 export function FireworksCanvas({ onUnavailable }: { onUnavailable?: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const failureCallback = useRef(onUnavailable);
-  failureCallback.current = onUnavailable;
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) {
-      failureCallback.current?.();
+      onUnavailable?.();
       return;
     }
 
@@ -168,7 +166,7 @@ export function FireworksCanvas({ onUnavailable }: { onUnavailable?: () => void 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const nameSlot = canvas.parentElement?.querySelector<HTMLElement>(".finale-v2__name-slot");
       if (!nameSlot) {
-        failureCallback.current?.();
+        onUnavailable?.();
         return;
       }
       try {
@@ -177,7 +175,7 @@ export function FireworksCanvas({ onUnavailable }: { onUnavailable?: () => void 
         name = [];
       }
       if (!name.length) {
-        failureCallback.current?.();
+        onUnavailable?.();
         return;
       }
       canvas.dataset.particleCount = String(name.length);
@@ -281,7 +279,7 @@ export function FireworksCanvas({ onUnavailable }: { onUnavailable?: () => void 
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, []);
+  }, [onUnavailable]);
 
   return (
     <canvas

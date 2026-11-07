@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import type { CSSProperties, PointerEvent } from "react";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { RangoliAtmosphere } from "@/components/effects/rangoli-atmosphere";
