@@ -9,11 +9,11 @@ import { WishingSkyAtmosphere } from "@/components/effects/wishing-sky-atmospher
 import type { SceneProps } from "@/components/experience/experience";
 
 const stars = [
-  { x: 14, y: 65, tone: "#f4c46e" },
+  { x: 18, y: 65, tone: "#f4c46e" },
   { x: 29, y: 29, tone: "#e9aad5" },
   { x: 51, y: 49, tone: "#8dd9ea" },
   { x: 72, y: 24, tone: "#ffe1ab" },
-  { x: 88, y: 65, tone: "#dcb3fc" },
+  { x: 82, y: 65, tone: "#dcb3fc" },
 ] as const;
 
 export function WishingStars({ onNext, playChime }: SceneProps) {
