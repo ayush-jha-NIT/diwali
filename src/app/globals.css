@@ -2635,3 +2635,220 @@ h1,h2,p{margin-top:0}h1,h2{font-family:var(--font-display),Georgia,serif;font-we
   .letter-v2__paper,.letter-v2__paper-spark,.letter-v2__envelope-flap,
   .letter-v2__envelope-inner {animation:none!important;}
 }
+
+
+/* Phase 7 | The Sky Belongs to You. Particle-only KUHU with accessible fallback. */
+.finale--phase7 {
+  position:relative;
+  isolation:isolate;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  width:min(100%,1500px);
+  min-height:calc(100svh - 142px);
+  padding:0;
+  text-align:center;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 50% 50%,rgba(79,43,100,.28),transparent 55%),
+    linear-gradient(180deg,#0d0f26,#17122e 55%,#080e22 100%);
+}
+.finale--phase7::after {
+  z-index:1;
+  background:radial-gradient(ellipse at 50% 47%,transparent 10%,rgba(6,8,23,.31) 86%);
+}
+.finale-v2__background {
+  position:absolute;z-index:0;inset:0;
+  overflow:hidden;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 51%,rgba(236,161,125,.08),transparent 40%);
+}
+.finale-v2__glow{
+  position:absolute;width:55%;height:62%;border-radius:50%;filter:blur(56px);
+  opacity:.46;animation:finaleSkyBreath 13s ease-in-out infinite alternate;
+}
+.finale-v2__glow--left{left:-9%;top:13%;background:radial-gradient(circle,rgba(113,65,161,.47),transparent 70%);}
+.finale-v2__glow--right{right:-11%;top:9%;background:radial-gradient(circle,rgba(188,84,133,.29),transparent 72%);animation-delay:-6s;}
+.finale-v2__moon {
+  position:absolute;right:12%;top:14%;
+  width:47px;height:47px;border-radius:50%;
+  background:radial-gradient(circle at 32% 27%,#fff7df,#efd3b2 69%,#b5a4bb);
+  box-shadow:0 0 39px rgba(243,201,151,.51),0 0 94px rgba(240,180,157,.15);
+  opacity:.68;
+}
+.finale-v2__star {
+  position:absolute;width:2px;height:2px;border-radius:50%;
+  background:#ffe9be;box-shadow:0 0 10px 2px rgba(253,216,165,.42);
+  animation:finaleStarTwinkle 4.3s ease-in-out infinite alternate;
+}
+.finale-v2__silhouette{position:absolute;bottom:0;width:100%;height:clamp(85px,18vh,155px);opacity:.72;}
+@keyframes finaleSkyBreath{to{opacity:.29;transform:translate3d(27px,-13px,0) scale(1.12);}}
+@keyframes finaleStarTwinkle {from{opacity:.12;transform:scale(.6);}to{opacity:.76;transform:scale(1.23);}}
+
+.finale--phase7 .finale-v2__canvas{
+  position:absolute;z-index:2;
+  inset:0;width:100%;height:100%;
+  pointer-events:none;
+  display:block;
+  image-rendering:auto;
+}
+.finale-v2__content {
+  position:relative;z-index:3;
+  display:grid;
+  grid-template-rows:auto minmax(130px,1fr) auto;
+  justify-items:center;
+  width:100%;
+  min-height:calc(100svh - 142px);
+  max-width:1350px;
+  margin:0 auto;
+  padding:clamp(23px,4.4vh,52px) 22px clamp(19px,3.4vh,38px);
+  pointer-events:none;
+}
+.finale-v2__heading{position:relative;display:flex;flex-direction:column;align-items:center;z-index:4;}
+.finale-v2__eyebrow {
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  color:#f5d8ae;font-size:10px;font-weight:800;letter-spacing:.24em;
+}
+.finale-v2__ornament{
+  margin:clamp(12px,2.2vh,22px) auto 5px;
+  color:#ffe1a6b8;font-size:13px;letter-spacing:.26em;
+}
+.finale-v2__greeting {
+  margin:0;
+  color:#fff3dc;
+  font:500 clamp(50px,6.7vw,94px)/1.04 var(--font-display),Georgia,serif;
+  letter-spacing:-.038em;
+  text-shadow:0 0 35px rgba(252,201,141,.42),0 6px 32px rgba(8,8,25,.75);
+  white-space:nowrap;
+}
+.finale-v2__greeting em {
+  font-style:italic;font-weight:400;
+  background:linear-gradient(105deg,#fff0c2,#f2c37f 45%,#efb0b9 100%);
+  background-clip:text;-webkit-text-fill-color:transparent;
+}
+.finale-v2__subheading {
+  margin:10px auto 0;
+  color:#dec8da;
+  font:400 clamp(11px,1.12vw,14px)/1.7 var(--font-body),Arial,sans-serif;
+  letter-spacing:.05em;
+}
+.finale-v2__name-slot {
+  position:relative;
+  display:grid;
+  place-items:center;
+  align-self:stretch;
+  width:min(100%,1000px);
+  min-height:clamp(160px,30svh,305px);
+  margin:0 auto;
+  pointer-events:none;
+}
+.finale--phase7 .finale-v2__static-name {
+  display:block;
+  margin:0;
+  color:#ffe0a1;
+  font:700 clamp(66px,16vw,177px)/1 var(--font-display),Georgia,serif;
+  letter-spacing:.065em;
+  text-shadow:0 0 17px rgba(255,211,153,.73),0 0 48px rgba(232,142,170,.52),0 0 94px rgba(255,203,138,.3);
+}
+.finale-v2__closing {
+  position:relative;
+  z-index:4;
+  display:flex;flex-direction:column;align-items:center;
+  width:100%;max-width:615px;
+  margin:0 auto;
+}
+.finale-v2__message-ornament {
+  color:#ffda9e;font-size:19px;
+  text-shadow:0 0 17px #ffd59f;
+  margin-bottom:6px;
+}
+.finale-v2__message {
+  margin:0 auto 12px;
+  max-width:590px;
+  color:#f3d7d8;
+  font:500 clamp(20px,2.45vw,30px)/1.21 var(--font-display),Georgia,serif;
+  text-shadow:0 3px 22px rgba(6,5,17,.96);
+  text-wrap:balance;
+}
+.finale-v2__message span{color:#ffe6c9;}
+.finale-v2__signature {
+  margin:0 auto 18px;color:#edc88f;
+  font:500 12px/1.6 var(--font-body),Arial,sans-serif;
+  letter-spacing:.12em;
+}
+.finale-v2__signature strong{color:#ffe7b2;font-weight:800;}
+.finale-v2__replay {
+  position:relative;
+  display:inline-flex;gap:10px;
+  border-color:rgba(246,208,146,.68);
+  background:rgba(18,14,40,.83);
+  box-shadow:0 0 20px rgba(243,184,120,.11),inset 0 0 20px rgba(225,162,134,.05);
+  color:#ffebcf;
+  font-size:11px;
+  font-weight:750;
+  letter-spacing:.065em;
+  min-height:45px;
+  pointer-events:auto;
+}
+.finale-v2__replay:hover,.finale-v2__replay:focus-visible {
+  border-color:#ffe0aa;
+  background:rgba(87,44,87,.89);
+  box-shadow:0 0 27px rgba(243,184,120,.32);
+}
+.finale-v2__closing-note{
+  margin-top:15px;
+  font-size:8px;font-weight:700;letter-spacing:.26em;
+  color:rgba(227,189,163,.56);
+}
+
+@media(max-width:700px) {
+  .finale--phase7{min-height:calc(100svh - 113px);}
+  .finale-v2__content {
+    min-height:calc(100svh - 113px);
+    padding:clamp(20px,4vh,39px) 14px clamp(16px,2.8vh,26px);
+    grid-template-rows:auto minmax(125px,1fr) auto;
+  }
+  .finale-v2__eyebrow{font-size:8px;letter-spacing:.125em;}
+  .finale-v2__ornament{margin:15px auto 6px;font-size:12px;}
+  .finale-v2__greeting {
+    font-size:clamp(47px,12.4vw,73px);line-height:1;
+    white-space:nowrap;letter-spacing:-.034em;
+  }
+  .finale-v2__subheading{
+    max-width:290px;font-size:10px;line-height:1.7;
+    letter-spacing:0;margin-top:11px;
+  }
+  .finale-v2__name-slot {
+    min-height:clamp(135px,29svh,245px);
+    width:100%;
+  }
+  .finale--phase7 .finale-v2__static-name {font-size:clamp(65px,17vw,125px);}
+  .finale-v2__moon{right:9%;top:19%;width:29px;height:29px;}
+  .finale-v2__message-ornament{font-size:15px;margin-bottom:5px;}
+  .finale-v2__message{font-size:clamp(19px,5.4vw,25px);line-height:1.23;max-width:335px;margin-bottom:11px;}
+  .finale-v2__signature{font-size:10px;letter-spacing:.06em;margin-bottom:15px;}
+  .finale-v2__replay{min-height:42px;font-size:10px;padding:10px 20px;}
+  .finale-v2__closing-note{font-size:7px;letter-spacing:.13em;margin-top:12px;}
+}
+@media(max-width:360px){
+  .finale-v2__content{padding:19px 12px 14px;}
+  .finale-v2__greeting{font-size:44px;}
+  .finale-v2__subheading{font-size:9px;margin-top:9px;}
+  .finale-v2__name-slot{min-height:125px;}
+  .finale-v2__message{font-size:18px;}
+  .finale-v2__signature{margin-bottom:9px;}
+  .finale-v2__closing-note{margin-top:8px;}
+}
+@media(max-height:725px) and (min-width:701px){
+  .finale-v2__content {padding:14px 20px 14px;grid-template-rows:auto minmax(110px,1fr) auto;}
+  .finale-v2__ornament{margin:7px auto 4px;}
+  .finale-v2__greeting{font-size:clamp(54px,5.3vw,75px);}
+  .finale-v2__subheading{margin-top:7px;}
+  .finale-v2__name-slot{min-height:115px;}
+  .finale-v2__message{font-size:clamp(20px,2vw,27px);}
+  .finale-v2__signature{margin-bottom:10px;}
+  .finale-v2__closing-note{margin-top:8px;}
+}
+@media (prefers-reduced-motion: reduce) {
+  .finale-v2__glow,.finale-v2__star {animation:none!important;}
+}

@@ -16,6 +16,7 @@ const body = Manrope({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://diwali-kuhu.vercel.app"),
   title: "The Last Spark | A little Diwali magic",
   description: "An interactive Diwali surprise, made with a little extra magic.",
   robots: { index: false, follow: false },
@@ -23,6 +24,14 @@ export const metadata: Metadata = {
     title: "The Last Spark",
     description: "Someone left a little magic for you tonight.",
     type: "website",
+    url: "https://diwali-kuhu.vercel.app",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "The Last Spark Diwali invitation" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Last Spark",
+    description: "Someone left a little magic for you tonight.",
+    images: ["/opengraph-image"],
   },
 };
 
